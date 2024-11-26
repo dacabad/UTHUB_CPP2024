@@ -9,7 +9,7 @@
 class UCustomActionComponent;
 class UCustomActionBase;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActionPerformed, AActor*, Instigator, UCustomActionBase*, CustomActionBase);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActionEvent, AActor*, ActionInstigator, TSubclassOf<UCustomActionBase>, Action);
 
 UCLASS()
 class UTHUB_CPP2024_API UCustomActionSubsystem : public UWorldSubsystem
@@ -25,6 +25,9 @@ protected:
 
 public:
 
+	UFUNCTION(BlueprintPure)
+	static UCustomActionSubsystem* GetActionSubsystem(const UObject* WorldContextObject);
+	
 	UFUNCTION(BlueprintCallable)
 	void DoAction(AActor* InActor, const TSubclassOf<UCustomActionBase>& InAction);
 	
@@ -43,6 +46,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ExecuteMassiveAction(const TSubclassOf<UCustomActionBase>& InAction);
 
+	UPROPERTY(BlueprintAssignable)
+	FOnActionEvent OnActionStarted;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnActionEvent OnActionFinished;
+	
 private:
 
 	void RegisterActionEnabledActors();
@@ -59,7 +68,4 @@ private:
 #endif
 
 public:
-
-	UPROPERTY(BlueprintAssignable)
-	FOnActionPerformed OnActionPerformed;
 };

@@ -19,14 +19,26 @@ class UTHUB_CPP2024_API UCustomActionComponent : public UActorComponent
 public:
 	UCustomActionComponent();
 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
 protected:
 	
 	virtual void BeginPlay() override;
 
 	void DoAction(const TSubclassOf<UCustomActionBase>& ActionClass);
+	void StopAction();
+
+	void AddAction(const TSubclassOf<UCustomActionBase>& InNewAction);
+	void RemoveAction(const TSubclassOf<UCustomActionBase>& InActionToRemove);
+
+#if WITH_EDITOR
+	void ShowDebugInfo();
+#endif
 	
 private:
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
-	TArray<TSubclassOf<UCustomActionBase>> Actions;	
+	TArray<TSubclassOf<UCustomActionBase>> Actions;
+
+	TSubclassOf<UCustomActionBase> CurrentAction;
 };

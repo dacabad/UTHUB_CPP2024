@@ -11,16 +11,7 @@ void UCustomActionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	TArray<AActor*> OutActors;
-	UGameplayStatics::GetAllActorsOfClass(this, AActor::StaticClass(), OutActors);
-
-	for(auto FoundActor : OutActors)
-	{
-		if(FoundActor->FindComponentByClass<UCustomActionComponent>())
-		{
-			EnabledActors.AddUnique(FoundActor);
-		}
-	}
+	RegisterActionEnabledActors();
 
 	GetWorld()->AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateUObject(this, &ThisClass::RegisterActionEnabledActor));
 	// TODO - Detectar actores nuevos que se crean
@@ -36,37 +27,72 @@ bool UCustomActionSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 	return Super::ShouldCreateSubsystem(Outer);
 }
 
+UCustomActionSubsystem* UCustomActionSubsystem::GetActionSubsystem(const UObject* WorldContextObject)
+{
+	if(WorldContextObject)
+	{
+		return WorldContextObject->GetWorld()->GetSubsystem<UCustomActionSubsystem>();
+	}
+
+	return nullptr;
+}
+
 void UCustomActionSubsystem::DoAction(AActor* InActor, const TSubclassOf<UCustomActionBase>& InAction)
 {
 	if(UCustomActionComponent* Comp = GetCustomActionComponent(InActor))
 	{
 		Comp->DoAction(InAction);
+		OnActionStarted.Broadcast(InActor, InAction);
 	}
 }
 
 void UCustomActionSubsystem::DoActionSequence(AActor* InActor,
 	const TArray<TSubclassOf<UCustomActionBase>>& InActionSequence)
 {
+	
 }
 
 void UCustomActionSubsystem::StopCurrentAction(AActor* InActor)
 {
+	if(UCustomActionComponent* Comp = GetCustomActionComponent(InActor))
+	{
+		Comp->StopAction();
+	}
 }
 
 void UCustomActionSubsystem::AddActionToActor(AActor* InActor, const TSubclassOf<UCustomActionBase>& InNewAction)
 {
+	if(UCustomActionComponent* Comp = GetCustomActionComponent(InActor))
+	{
+		Comp->AddAction(InNewAction);
+	}
 }
 
 void UCustomActionSubsystem::RemoveActionFromActor(AActor* InActor, const TSubclassOf<UCustomActionBase>& InNewAction)
 {
+	if(UCustomActionComponent* Comp = GetCustomActionComponent(InActor))
+	{
+		Comp->RemoveAction(InNewAction);
+	}
 }
 
 void UCustomActionSubsystem::ExecuteMassiveAction(const TSubclassOf<UCustomActionBase>& InAction)
 {
+	for(auto Actor : EnabledActors)
+	{
+		GetCustomActionComponent(Actor)->DoAction(InAction);
+	}
 }
 
 void UCustomActionSubsystem::RegisterActionEnabledActors()
 {
+	TArray<AActor*> OutActors;
+	UGameplayStatics::GetAllActorsOfClass(this, AActor::StaticClass(), OutActors);
+
+	for(auto FoundActor : OutActors)
+	{
+		RegisterActionEnabledActor(FoundActor);
+	}
 }
 
 void UCustomActionSubsystem::RegisterActionEnabledActor(AActor* InActor)
@@ -90,6 +116,12 @@ UCustomActionComponent* UCustomActionSubsystem::GetCustomActionComponent(AActor*
 	// 	InActor->FindComponentByClass<UCustomActionComponent>() : nullptr;
 }
 
+#if WITH_EDITOR
 void UCustomActionSubsystem::ShowDebugInfo()
 {
+	for(auto Actor: EnabledActors)
+	{
+		GetCustomActionComponent(Actor)->ShowDebugInfo();
+	}
 }
+#endif

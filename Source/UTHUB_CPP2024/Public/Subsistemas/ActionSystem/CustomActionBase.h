@@ -19,8 +19,17 @@ class UTHUB_CPP2024_API UCustomActionBase : public UObject
 protected:
 		
 	virtual void DoAction(AActor* ActionInstigator);
+	virtual void EndAction(AActor* ActionInstigator);
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void ReceiveDoAction(AActor* ActionInstigator);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ReceiveStopAction();
+
+#if WITH_EDITOR
+	UFUNCTION(BlueprintNativeEvent)
+	void ShowDebugInfo(const float DeltaSeconds);
+#endif
 };
 
