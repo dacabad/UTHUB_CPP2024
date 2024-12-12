@@ -11,6 +11,48 @@ class UCustomActionBase;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActionEvent, AActor*, ActionInstigator, TSubclassOf<UCustomActionBase>, Action);
 
+
+
+
+// Delegate single
+// Delegate multicast
+
+template<typename FunctorType>
+class FCustomMulticastDelegate
+{	
+	class FSingleDelegate
+	{
+		TFunction<void()> Functor;
+
+	public:
+		void Bind(TFunction<void()> InFunction);
+
+		bool Execute()
+		{
+			Functor();
+			return true;
+		};
+	};
+	
+	// TArray<TFunction<void()>> FunctionList;
+	TArray<FSingleDelegate> FunctionList;
+	
+public:
+	
+	FCustomMulticastDelegate();
+
+	void AddFunction(TFunctionRef<void()> InFunction); // REGISTRO LOS OBSERVADORES
+	void Add(FSingleDelegate InDelegate);
+	
+	void Broadcast()
+	{
+		for(auto Func : FunctionList)
+		{
+			Func.Execute();
+		}
+	};
+};
+
 UCLASS()
 class UTHUB_CPP2024_API UCustomActionSubsystem : public UWorldSubsystem
 {
@@ -34,6 +76,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DoActionSequence(AActor* InActor, const TArray<TSubclassOf<UCustomActionBase>>& InActionSequence);
 
+	DECLARE_DYNAMIC_DELEGATE_TwoParams(FSingleActionEvent, AActor*, ActionInstigator, TSubclassOf<UCustomActionBase>, Action);
+	UFUNCTION(BlueprintCallable)
+	void DoActionAndWait(AActor* InActor, const TSubclassOf<UCustomActionBase>& InAction, FSingleActionEvent OnActionFinishedSingleEvent);
+	
+	// void DoActionAndWait(AActor* InActor, const TSubclassOf<UCustomActionBase>& InAction, TBaseDynamicDelegate<AActor*, TSubclassOf<UCustomActionBase>> OnActionFinished);
+	void DoActionAndWait(AActor* InActor, const TSubclassOf<UCustomActionBase>& InAction, FOnActionEvent::FDelegate OnActionFinished);
+	
 	UFUNCTION(BlueprintCallable)
 	void StopCurrentAction(AActor* InActor);
 	

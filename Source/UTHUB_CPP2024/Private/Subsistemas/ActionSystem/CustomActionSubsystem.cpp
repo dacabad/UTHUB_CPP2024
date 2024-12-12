@@ -15,6 +15,7 @@ void UCustomActionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	GetWorld()->AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateUObject(this, &ThisClass::RegisterActionEnabledActor));
 	// TODO - Detectar actores nuevos que se crean
+	
 }
 
 void UCustomActionSubsystem::Deinitialize()
@@ -52,11 +53,19 @@ void UCustomActionSubsystem::DoActionSequence(AActor* InActor,
 	
 }
 
+void UCustomActionSubsystem::DoActionAndWait(AActor* InActor, const TSubclassOf<UCustomActionBase>& InAction,
+	FSingleActionEvent OnActionFinishedSingleEvent)
+{
+	OnActionFinished.Add(OnActionFinishedSingleEvent);
+	DoAction(InActor, InAction);
+}
+
 void UCustomActionSubsystem::StopCurrentAction(AActor* InActor)
 {
 	if(UCustomActionComponent* Comp = GetCustomActionComponent(InActor))
 	{
 		Comp->StopAction();
+		
 	}
 }
 

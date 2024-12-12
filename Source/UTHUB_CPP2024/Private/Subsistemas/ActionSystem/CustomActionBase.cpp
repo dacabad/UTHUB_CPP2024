@@ -6,8 +6,7 @@
 void UCustomActionBase::DoAction(AActor* ActionInstigator)
 {
 	// Inicialización de las acciones
-
-
+	
 	ReceiveDoAction(ActionInstigator);
 }
 

@@ -46,4 +46,8 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	float Health = 100.f;
+
+	float HealthRegen = 1.f;
 };
