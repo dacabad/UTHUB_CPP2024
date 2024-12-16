@@ -67,6 +67,7 @@ void UGenericUtils::SortArray(TArray<ArrType>& InUnsortedArray, TFunctionRef<boo
 				ArrPos = j;
 			}
 		}
+
 		
 		// Swap positions
 		if(ArrPos != i)
